@@ -11,12 +11,12 @@
 ## 0.1 Understand TCP
 
 Learn:
-- What is TCP?
-- Client vs Server
-- IP Address
-- Port
-- Connection lifecycle
-- Why TCP is a stream and not messages
+- [x] What is TCP?
+- [x] Client vs Server
+- [x] IP Address
+- [x] Port
+- [x] Connection lifecycle
+- [X] Why TCP is a stream and not messages
 
 Deliverable:
 - Written notes explaining TCP in your own words
@@ -26,12 +26,12 @@ Deliverable:
 ## 0.2 Explore Node TCP APIs
 
 Learn:
-- Node `net` module
-- Server creation
-- Socket events
-- Connection events
-- Data events
-- Close/error events
+- [x] Node `net` module
+- [x] Server creation
+- [x] Socket events
+- [x] Connection events
+- [x] Data events
+- [x] Close/error events
 
 Deliverable:
 - Simple server accepting connections
@@ -52,6 +52,8 @@ Concepts:
 - Socket reading
 - Socket writing
 - Connection handling
+
+did this!
 
 Deliverable:
 - Working echo server

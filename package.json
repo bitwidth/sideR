@@ -4,11 +4,15 @@
   "description": "",
   "license": "ISC",
   "author": "bitwidth",
-  "type": "commonjs",
+  "type": "module",
   "main": "index.js",
   "scripts": {
-    "dev": "tsx watch src/index.ts",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "devW": "VERBOSE=true tsx watch src/index.ts",
+    "dev": "VERBOSE=true tsx src/index.ts",
+    "devClientW": "VERBOSE=true tsx watch src/client.ts",
+    "devClient": "VERBOSE=true tsx src/client.ts",
+    "testW": "VERBOSE=true tsx watch src/tests/testScript.ts",
+    "test": "VERBOSE=true tsx src/tests/testScript.ts"
   },
   "devDependencies": {
     "@types/node": "^25.9.2",

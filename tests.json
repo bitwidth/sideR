@@ -1,0 +1,187 @@
+[
+  {
+    "name": "Store starts empty",
+    "commands": ["GET name;"],
+    "results": [{ "status": "EMPTY", "data": "undefined" }]
+  },
+  {
+    "name": "SET stores value",
+    "commands": ["SET name vivek;", "GET name;"],
+    "results": [
+      { "status": "OK", "data": "vivek" },
+      { "status": "OK", "data": "vivek" }
+    ]
+  },
+  {
+    "name": "GET returns value",
+    "commands": ["GET name;"],
+    "results": [{ "status": "OK", "data": "vivek" }]
+  },
+  {
+    "name": "SET overwrites value",
+    "commands": ["SET name solomon;", "GET name;"],
+    "results": [
+      { "status": "OK", "data": "solomon" },
+      { "status": "OK", "data": "solomon" }
+    ]
+  },
+  {
+    "name": "DEL removes value",
+    "commands": ["DEL name;", "GET name;"],
+    "results": [
+      { "status": "EMPTY", "data": "undefined" },
+      { "status": "EMPTY", "data": "undefined" }
+    ]
+  },
+  {
+    "name": "GET missing key",
+    "commands": ["GET somerandomkey;"],
+    "results": [{ "status": "EMPTY", "data": "undefined" }]
+  },
+  {
+    "name": "EXISTS returns false if value is not there",
+    "commands": ["EXISTS newname;"],
+    "results": [{ "status": "OK", "data": false }]
+  },
+  {
+    "name": "EXISTS returns true if value is present",
+    "commands": ["SET newname vivek;", "EXISTS newname;"],
+    "results": [
+      { "status": "OK", "data": "vivek" },
+      { "status": "OK", "data": true }
+    ]
+  },
+  {
+    "name": "KEYS retuns all the keys that exists in data store",
+    "commands": ["SET name vivek;", "KEYS;"],
+    "results": [
+      { "status": "OK", "data": "vivek" },
+      { "status": "OK", "data": ["name", "newname"] }
+    ]
+  },
+  {
+    "name": "KEYS returns empty array if nothing is present in data store",
+    "commands": ["DEL name;", "DEL newname;", "KEYSa;"],
+    "results": [
+      { "status": "EMPTY", "data": "undefined" },
+      { "status": "EMPTY", "data": "undefined" },
+      { "status": "OK", "data": [] }
+    ]
+  },
+  {
+    "name": "Error for Missing value in a COMMAND",
+    "commands": ["SET name ;"],
+    "results": [
+      { "status": "ERROR", "message": "Missing argument valueForKey" }
+    ]
+  },
+  {
+    "name": "Error for Unknown command",
+    "commands": ["WTF name vivek;"],
+    "results": [{ "status": "ERROR", "message": "Unknown command provided" }]
+  },
+  {
+    "name": "Error for too long key",
+    "commands": [
+      "SET nameMoreThan255CharsnameMoreThan255CharsnameMoreThan255CharsnameMoreThan255CharsnameMoreThan255CharsnameMoreThan255CharsnameMoreThan255CharsnameMoreThan255CharsnameMoreThan255CharsnameMoreThan255CharsnameMoreThan255CharsnameMoreThan255CharsnameMoreThan255CharsnameMoreThan255Chars vivek;"
+    ],
+    "results": [
+      {
+        "status": "ERROR",
+        "message": "Expected argument keyName to be maximum of length 255 got 280"
+      }
+    ]
+  },
+  {
+    "name": "INCR - increments a numeric value",
+    "commands": ["SET numTest 1;", "INCR numTest;"],
+    "results": [
+      { "status": "OK", "data": "1" },
+      { "status": "OK", "data": 2 }
+    ]
+  },
+  {
+    "name": "INCR - doesn't increment a non-numeric value",
+    "commands": ["SET numTest a;", "INCR numTest;"],
+    "results": [
+      { "status": "OK", "data": "a" },
+      { "status": "EMPTY", "data": "undefined" }
+    ]
+  },
+  {
+    "name": "DECR - decrements a numeric value",
+    "commands": ["SET numTest 1;", "DECR numTest;"],
+    "results": [
+      { "status": "OK", "data": "1" },
+      { "status": "OK", "data": 0 }
+    ]
+  },
+  {
+    "name": "DECR - doesn't decrement a non-numeric value",
+    "commands": ["SET numTest a;", "DECR numTest;"],
+    "results": [
+      { "status": "OK", "data": "a" },
+      { "status": "EMPTY", "data": "undefined" }
+    ]
+  },
+  {
+    "name": "TTL - returns  for a key that doesn't exist",
+    "commands": ["TTL expVar;"],
+    "results": [{ "status": "ERROR", "message": "No such key found." }]
+  },
+  {
+    "name": "TTL - returns the remaining time in seconds to live for a key",
+    "commands": ["SET expVar 123 EX 2;", "GET expVar;", "TTL expVar;"],
+    "results": [
+      { "status": "OK", "data": "123" },
+      { "status": "OK", "data": "123" },
+      { "status": "OK", "data": 2 }
+    ]
+  },
+  {
+    "name": "LPUSH - adds elements to the head of a list",
+    "commands": ["LPUSH arrPush 1;"],
+    "results": [{ "status": "OK", "data": 1 }]
+  },
+  {
+    "name": "LPUSH - adds multiple elements to the head of a list",
+    "commands": ["LPUSH arrPush a b 0;"],
+    "results": [{ "status": "OK", "data": 4 }]
+  },
+  {
+    "name": "RPUSH - adds elements to the tail of a list",
+    "commands": ["RPUSH arrPush 2;"],
+    "results": [{ "status": "OK", "data": 5 }]
+  },
+  {
+    "name": "RPUSH - adds multiple elements to the tail of a list",
+    "commands": ["RPUSH arrPush c d;", "GET arrPush;"],
+    "results": [
+      { "status": "OK", "data": 7 },
+      { "status": "OK", "data": ["a", "b", "0", "1", "2", "c", "d"] }
+    ]
+  },
+  {
+    "name": "Range fetch from start and end",
+    "commands": ["LPUSH arrRange 1 2 3 4 5;", "LRANGE arrRange 0 3;"],
+    "results": [
+      { "status": "OK", "data": 5 },
+      { "status": "OK", "data": ["1", "2", "3", "4"] }
+    ]
+  },
+  {
+    "name": "Range fetch from negative start and end",
+    "commands": ["LRANGE arrRange -2 -1;"],
+    "results": [{ "status": "OK", "data": ["4", "5"] }]
+  },
+  {
+    "name": "Range fetch from positive start and negative end",
+    "commands": ["LRANGE arrRange 0 -1;"],
+    "results": [{ "status": "OK", "data": ["1", "2", "3", "4", "5"] }]
+  },
+  {
+    "name": "Range fetch from beyond end",
+    "commands": ["LRANGE arrRange 0 100;"],
+    "results": [{ "status": "OK", "data": ["1", "2", "3", "4", "5"] }]
+  }
+]

@@ -10,15 +10,21 @@ export enum REDIS_COMMANDS {
   DECR = "DECR",
   TTL = "TTL",
   SAVE = "SAVE",
+  // List
   LPUSH = "LPUSH",
   RPUSH = "RPUSH",
   LRANGE = "LRANGE",
+  // Set
   SADD = "SADD",
   SREM = "SREM",
   SMEMBERS = "SMEMBERS",
+  // Hash
   HSET = "HSET",
   HGET = "HGET",
   HDEL = "HDEL",
+  // Pub/Sub
+  SUBSCRIBE = "SUBSCRIBE",
+  PUBLISH = "PUBLISH",
 }
 
 export enum REDIS_MODIFIERS {
@@ -426,6 +432,41 @@ export const COMMAND_VALIDATIONS: {
           name: "field",
           type: ARG_TYPE.STRING,
           maxLength: 255,
+          minLength: 1,
+          size: undefined,
+        },
+      ],
+    },
+  ],
+  [REDIS_COMMANDS.SUBSCRIBE]: [
+    {
+      totalArgs: 1,
+      args: [
+        {
+          name: "channel",
+          type: ARG_TYPE.STRING,
+          maxLength: 255,
+          minLength: 1,
+          size: undefined,
+        },
+      ],
+    },
+  ],
+  [REDIS_COMMANDS.PUBLISH]: [
+    {
+      totalArgs: 2,
+      args: [
+        {
+          name: "channel",
+          type: ARG_TYPE.STRING,
+          maxLength: 255,
+          minLength: 1,
+          size: undefined,
+        },
+        {
+          name: "message",
+          type: ARG_TYPE.STRING,
+          maxLength: 128000,
           minLength: 1,
           size: undefined,
         },

@@ -42,6 +42,9 @@ export const ALLOWED_COMMANDS = [
   REDIS_COMMANDS.LPUSH,
   REDIS_COMMANDS.RPUSH,
   REDIS_COMMANDS.LRANGE,
+  REDIS_COMMANDS.SADD,
+  REDIS_COMMANDS.SREM,
+  REDIS_COMMANDS.SMEMBERS,
 ];
 
 export interface CommandModifiers {
@@ -292,6 +295,62 @@ export const COMMAND_VALIDATIONS: {
           type: ARG_TYPE.STRING,
           max: MAX_LIMITS.INTEGER_MAX_LIMIT,
           min: MAX_LIMITS.INTEGER_MIN_LIMIT,
+          size: undefined,
+        },
+      ],
+    },
+  ],
+  [REDIS_COMMANDS.SADD]: [
+    {
+      totalArgs: 2,
+      args: [
+        {
+          name: "setName",
+          type: ARG_TYPE.STRING,
+          maxLength: 255,
+          minLength: 1,
+          size: undefined,
+        },
+        {
+          name: "members",
+          type: ARG_TYPE.LIST,
+          maxLength: 255,
+          minLength: 1,
+          size: undefined,
+        },
+      ],
+    },
+  ],
+  [REDIS_COMMANDS.SREM]: [
+    {
+      totalArgs: 2,
+      args: [
+        {
+          name: "setName",
+          type: ARG_TYPE.STRING,
+          maxLength: 255,
+          minLength: 1,
+          size: undefined,
+        },
+        {
+          name: "members",
+          type: ARG_TYPE.LIST,
+          maxLength: 255,
+          minLength: 1,
+          size: undefined,
+        },
+      ],
+    },
+  ],
+  [REDIS_COMMANDS.SMEMBERS]: [
+    {
+      totalArgs: 1,
+      args: [
+        {
+          name: "setName",
+          type: ARG_TYPE.STRING,
+          maxLength: 255,
+          minLength: 1,
           size: undefined,
         },
       ],

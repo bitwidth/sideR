@@ -3,7 +3,7 @@ import { DEFAULT_DATASTORE_CONFIGURATION } from "./constants/configs.js";
 import { DataStoreErrorMessages } from "./constants/errorMessages.js";
 import { ConverterUtils } from "./utils/converters.js";
 import { InfoMessages } from "./constants/infoMessages.js";
-import type { DataStoreValueTypes } from "./constants/dataStore.js";
+import { DataStoreValueTypes } from "./constants/dataStore.js";
 
 interface DataStoreMetadataDetails {
   _type: DataStoreValueTypes;
@@ -248,6 +248,7 @@ export class DataStore {
     );
   }
 
+  // TODO: Need to use the Generic value system
   public static listPush(key: string, value: string[], end: boolean = false) {
     let metadata = this.getMetadata(key, false);
     if (!metadata) {
@@ -297,26 +298,31 @@ export class DataStore {
     return list.slice(actualStart, actualEnd + 1);
   }
 
-  public static setAdd(key: string, value: string[], end: boolean = false) {
+  // TODO: Need to use actual SET than list
+  // TODO: Need to use the Generic value system
+  public static setAdd(key: string, value: string[]) {
     let metadata = this.getMetadata(key, false);
     if (!metadata) {
       metadata = this.initMetadata(key);
       metadata.type = DataStoreValueTypes.SET;
-      this.database.set(key, []);
+      this.database.set(key, new Set<any>());
     }
 
     if (metadata.type !== DataStoreValueTypes.SET) {
       throw new Error(DataStoreErrorMessages.LIST_PUSH_INVALID_TYPE());
     }
 
-    const list = this.database.get(key) as string[];
-    if (end) {
-      list.push(...value);
-    } else {
-      list.unshift(...value);
-    }
+    const storedSet = this.database.get(key) as Set<any>;
+    value.forEach((item) => storedSet.add(item));
 
-    return list.length;
+    return storedSet.size;
+  }
+
+  public static setRemove(key: string, value: string[]) {
+    const storedSet = this.database.get(key) as Set<any>;
+    value.forEach((item) => storedSet.delete(item));
+
+    return storedSet.size;
   }
 
   public static setGet(key: string) {
@@ -328,10 +334,11 @@ export class DataStore {
 
     // Range: if the range is -1 then get the list from the back
     // if the range is from 0 then fetch it from
-    const list = this.database.get(key) as string[];
-    return list.
+    const storedSet = this.database.get(key) as Set<any>;
+    return Array.from(storedSet);
   }
 
+  // TODO: Need to use the Generic value system
   public static persist() {
     try {
       this.log(
@@ -360,6 +367,7 @@ export class DataStore {
     return true;
   }
 
+  // TODO: Need to use the Generic value system
   public static restore() {
     try {
       this.log(

@@ -74,6 +74,18 @@ export class CommandHandler {
     return DataStore.listGet(key, start, end);
   }
 
+  private setAdd(key: string, value: string[]) {
+    return DataStore.setAdd(key, value);
+  }
+
+  private setRemove(key: string, value: string[]) {
+    return DataStore.setRemove(key, value);
+  }
+
+  private setMembers(key: string) {
+    return DataStore.setGet(key);
+  }
+
   execute() {
     let result;
 
@@ -117,6 +129,15 @@ export class CommandHandler {
           Number(this.args[1]!),
           Number(this.args[2]!),
         );
+        break;
+      case REDIS_COMMANDS.SADD:
+        result = this.setAdd(this.args[0]!, this.args.slice(1));
+        break;
+      case REDIS_COMMANDS.SREM:
+        result = this.setRemove(this.args[0]!, this.args.slice(1));
+        break;
+      case REDIS_COMMANDS.SMEMBERS:
+        result = this.setMembers(this.args[0]!);
         break;
       default:
         this.log("Sorry, command not recognised");

@@ -338,6 +338,42 @@ export class DataStore {
     return Array.from(storedSet);
   }
 
+  public static hashSet(map: string, key: string, value: string[]) {
+    let metadata = this.getMetadata(key, false);
+    if (!metadata) {
+      metadata = this.initMetadata(map);
+      metadata.type = DataStoreValueTypes.HASH;
+      this.database.set(map, new Map<any, any>());
+    }
+
+    if (metadata.type !== DataStoreValueTypes.HASH) {
+      throw new Error(DataStoreErrorMessages.LIST_PUSH_INVALID_TYPE());
+    }
+
+    const storedHash = this.database.get(map) as Map<any, any>;
+    if (storedHash !== undefined) {
+      this.database.get(map).set(key, value[0]);
+    }
+  }
+
+  public static hashGet(map: string, key: string) {
+    const metadata = this.getMetadata(map, false);
+
+    if (!metadata) {
+      return null;
+    }
+
+    const storedHash = this.database.get(map) as Map<any, any>;
+    return storedHash ? storedHash.get(key) : null;
+  }
+
+  public static hashDelete(map: string, key: string) {
+    const storedHash = this.database.get(map) as Map<any, any>;
+    if (storedHash) {
+      storedHash.delete(key);
+    }
+  }
+
   // TODO: Need to use the Generic value system
   public static persist() {
     try {

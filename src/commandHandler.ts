@@ -86,6 +86,18 @@ export class CommandHandler {
     return DataStore.setGet(key);
   }
 
+  private hashSet(map: string, key: string, value: string[]) {
+    return DataStore.hashSet(map, key, value);
+  }
+
+  private hashGet(map: string, key: string) {
+    return DataStore.hashGet(map, key);
+  }
+
+  private hashDelete(map: string, key: string) {
+    return DataStore.hashDelete(map, key);
+  }
+
   execute() {
     let result;
 
@@ -138,6 +150,15 @@ export class CommandHandler {
         break;
       case REDIS_COMMANDS.SMEMBERS:
         result = this.setMembers(this.args[0]!);
+        break;
+      case REDIS_COMMANDS.HSET:
+        result = this.hashSet(this.args[0]!, this.args[1]!, this.args.slice(2));
+        break;
+      case REDIS_COMMANDS.HGET:
+        result = this.hashGet(this.args[0]!, this.args[1]!);
+        break;
+      case REDIS_COMMANDS.HDEL:
+        result = this.hashDelete(this.args[0]!, this.args[1]!);
         break;
       default:
         this.log("Sorry, command not recognised");

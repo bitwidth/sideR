@@ -45,6 +45,9 @@ export const ALLOWED_COMMANDS = [
   REDIS_COMMANDS.SADD,
   REDIS_COMMANDS.SREM,
   REDIS_COMMANDS.SMEMBERS,
+  REDIS_COMMANDS.HSET,
+  REDIS_COMMANDS.HGET,
+  REDIS_COMMANDS.HDEL,
 ];
 
 export interface CommandModifiers {
@@ -348,6 +351,79 @@ export const COMMAND_VALIDATIONS: {
       args: [
         {
           name: "setName",
+          type: ARG_TYPE.STRING,
+          maxLength: 255,
+          minLength: 1,
+          size: undefined,
+        },
+      ],
+    },
+  ],
+  // TODO: Redis does the multiple fields being set via a single command - as of now our system can only support one field at a time due to parser and validator limitations
+  // I didnt have this far insight while designing Parser and the Validator.
+  // Lesson learned. More abstraction needed.
+  [REDIS_COMMANDS.HSET]: [
+    {
+      totalArgs: 3,
+      args: [
+        {
+          name: "hashName",
+          type: ARG_TYPE.STRING,
+          maxLength: 255,
+          minLength: 1,
+          size: undefined,
+        },
+        {
+          name: "field",
+          type: ARG_TYPE.STRING,
+          maxLength: 255,
+          minLength: 1,
+          size: undefined,
+        },
+        {
+          name: "value",
+          type: ARG_TYPE.STRING,
+          maxLength: 255,
+          minLength: 1,
+          size: undefined,
+        },
+      ],
+    },
+  ],
+  [REDIS_COMMANDS.HGET]: [
+    {
+      totalArgs: 2,
+      args: [
+        {
+          name: "hashName",
+          type: ARG_TYPE.STRING,
+          maxLength: 255,
+          minLength: 1,
+          size: undefined,
+        },
+        {
+          name: "field",
+          type: ARG_TYPE.STRING,
+          maxLength: 255,
+          minLength: 1,
+          size: undefined,
+        },
+      ],
+    },
+  ],
+  [REDIS_COMMANDS.HDEL]: [
+    {
+      totalArgs: 2,
+      args: [
+        {
+          name: "hashName",
+          type: ARG_TYPE.STRING,
+          maxLength: 255,
+          minLength: 1,
+          size: undefined,
+        },
+        {
+          name: "field",
           type: ARG_TYPE.STRING,
           maxLength: 255,
           minLength: 1,

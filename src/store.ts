@@ -4,6 +4,7 @@ import { DataStoreErrorMessages } from "./constants/errorMessages.js";
 import { ConverterUtils } from "./utils/converters.js";
 import { InfoMessages } from "./constants/infoMessages.js";
 import { DataStoreValueTypes } from "./constants/dataStore.js";
+import { HashValue, ListValue, SetValue } from "./types/dataValue.js";
 
 interface DataStoreMetadataDetails {
   _type: DataStoreValueTypes;
@@ -14,7 +15,6 @@ interface DataStoreMetadataDetails {
 }
 
 export class DataStoreMetadata {
-  _type: DataStoreValueTypes;
   _createdAtTZ: string;
   _updatedAtTZ: string;
   _lastAccessedAtTZ: string | undefined;
@@ -23,7 +23,6 @@ export class DataStoreMetadata {
   constructor(details?: DataStoreMetadataDetails) {
     const currentTimeWithTZ = new Date().toISOString();
 
-    this._type = details?._type ?? DataStoreValueTypes.STRING;
     this._createdAtTZ = details?._createdAtTZ ?? currentTimeWithTZ;
     this._updatedAtTZ = details?._updatedAtTZ ?? currentTimeWithTZ;
     this._lastAccessedAtTZ = details?._lastAccessedAtTZ ?? currentTimeWithTZ;
@@ -36,10 +35,6 @@ export class DataStoreMetadata {
 
   public get currentDateTimeEpoch(): number {
     return new Date().getTime();
-  }
-
-  public get type(): DataStoreValueTypes {
-    return this._type;
   }
 
   public get createdAtTZ() {
@@ -59,11 +54,6 @@ export class DataStoreMetadata {
 
   public get expiresAtTZ(): string | undefined {
     return this._expiresAtTZ;
-  }
-
-  public set type(type: DataStoreValueTypes) {
-    console.log("setting type", type);
-    this._type = type;
   }
 
   public set createdAtTZ(dateISOString: string) {
@@ -248,27 +238,25 @@ export class DataStore {
     );
   }
 
-  // TODO: Need to use the Generic value system
   public static listPush(key: string, value: string[], end: boolean = false) {
     let metadata = this.getMetadata(key, false);
     if (!metadata) {
       metadata = this.initMetadata(key);
-      metadata.type = DataStoreValueTypes.LIST;
-      this.database.set(key, []);
+      this.database.set(key, new ListValue());
     }
 
-    if (metadata.type !== DataStoreValueTypes.LIST) {
-      throw new Error(DataStoreErrorMessages.LIST_PUSH_INVALID_TYPE());
-    }
+    // if (metadata.type !== DataStoreValueTypes.LIST) {
+    //   throw new Error(DataStoreErrorMessages.LIST_PUSH_INVALID_TYPE());
+    // }
 
-    const list = this.database.get(key) as string[];
+    const list: ListValue = this.database.get(key) as ListValue;
     if (end) {
-      list.push(...value);
+      list.value.push(...value);
     } else {
-      list.unshift(...value);
+      list.value.unshift(...value);
     }
 
-    return list.length;
+    return list.value.length;
   }
 
   public static listGet(key: string, start: number, end: number) {
@@ -281,48 +269,52 @@ export class DataStore {
     let actualStart = start;
     let actualEnd = end;
 
+    const list: ListValue = this.database.get(key) as ListValue;
+
     // Range: if the range is -1 then get the list from the back
     // if the range is from 0 then fetch it from
-    if (start > this.database.get(key).length) {
-      actualStart = this.database.get(key).length - 1;
+    if (start > list.value.length) {
+      actualStart = list.value.length - 1;
     } else if (start < 0) {
-      actualStart = this.database.get(key).length + start;
+      actualStart = list.value.length + start;
     }
-    if (end > this.database.get(key).length) {
-      actualEnd = this.database.get(key).length - 1;
+    if (end > list.value.length) {
+      actualEnd = list.value.length - 1;
     } else if (end < 0) {
-      actualEnd = this.database.get(key).length + end;
+      actualEnd = list.value.length + end;
     }
 
-    const list = this.database.get(key) as string[];
-    return list.slice(actualStart, actualEnd + 1);
+    return list.value.slice(actualStart, actualEnd + 1);
   }
 
-  // TODO: Need to use actual SET than list
-  // TODO: Need to use the Generic value system
   public static setAdd(key: string, value: string[]) {
     let metadata = this.getMetadata(key, false);
     if (!metadata) {
       metadata = this.initMetadata(key);
-      metadata.type = DataStoreValueTypes.SET;
-      this.database.set(key, new Set<any>());
+      this.database.set(key, new SetValue());
     }
 
-    if (metadata.type !== DataStoreValueTypes.SET) {
-      throw new Error(DataStoreErrorMessages.LIST_PUSH_INVALID_TYPE());
-    }
+    // if (metadata.type !== DataStoreValueTypes.SET) {
+    //   throw new Error(DataStoreErrorMessages.LIST_PUSH_INVALID_TYPE());
+    // }
 
-    const storedSet = this.database.get(key) as Set<any>;
-    value.forEach((item) => storedSet.add(item));
+    const storedSet = this.database.get(key) as SetValue;
+    value.forEach((item) => storedSet.value.add(item));
 
-    return storedSet.size;
+    return storedSet.value.size;
   }
 
   public static setRemove(key: string, value: string[]) {
-    const storedSet = this.database.get(key) as Set<any>;
-    value.forEach((item) => storedSet.delete(item));
+    let metadata = this.getMetadata(key, false);
+    if (!metadata) {
+      return null;
+      // throw new Error(DataStoreErrorMessages.LIST_PUSH_INVALID_TYPE());
+    }
 
-    return storedSet.size;
+    const storedSet = this.database.get(key) as SetValue;
+    value.forEach((item) => storedSet.value.delete(item));
+
+    return storedSet.value.size;
   }
 
   public static setGet(key: string) {
@@ -334,25 +326,24 @@ export class DataStore {
 
     // Range: if the range is -1 then get the list from the back
     // if the range is from 0 then fetch it from
-    const storedSet = this.database.get(key) as Set<any>;
-    return Array.from(storedSet);
+    const storedSet = this.database.get(key) as SetValue;
+    return Array.from(storedSet.value);
   }
 
   public static hashSet(map: string, key: string, value: string[]) {
     let metadata = this.getMetadata(key, false);
     if (!metadata) {
       metadata = this.initMetadata(map);
-      metadata.type = DataStoreValueTypes.HASH;
-      this.database.set(map, new Map<any, any>());
+      this.database.set(map, new HashValue());
     }
 
-    if (metadata.type !== DataStoreValueTypes.HASH) {
-      throw new Error(DataStoreErrorMessages.LIST_PUSH_INVALID_TYPE());
-    }
+    // if (metadata.type !== DataStoreValueTypes.HASH) {
+    //   throw new Error(DataStoreErrorMessages.LIST_PUSH_INVALID_TYPE());
+    // }
 
-    const storedHash = this.database.get(map) as Map<any, any>;
+    const storedHash = this.database.get(map) as HashValue;
     if (storedHash !== undefined) {
-      this.database.get(map).set(key, value[0]);
+      this.database.get(map).value.set(key, value[0]);
     }
   }
 
@@ -363,14 +354,23 @@ export class DataStore {
       return null;
     }
 
-    const storedHash = this.database.get(map) as Map<any, any>;
-    return storedHash ? storedHash.get(key) : null;
+    const storedHash = this.database.get(map) as HashValue;
+    return storedHash ? storedHash.value.get(key) : null;
   }
 
   public static hashDelete(map: string, key: string) {
-    const storedHash = this.database.get(map) as Map<any, any>;
-    if (storedHash) {
-      storedHash.delete(key);
+    const metadata = this.getMetadata(map, false);
+
+    if (!metadata) {
+      return 0;
+    }
+
+    const storedHash = this.database.get(map) as HashValue;
+    if (storedHash && storedHash.value && storedHash.value.has(key)) {
+      storedHash.value.delete(key);
+      return 1;
+    } else {
+      return 0;
     }
   }
 

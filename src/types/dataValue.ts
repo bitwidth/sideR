@@ -1,44 +1,49 @@
 import { DataStoreValueTypes } from "../constants/dataStore.js";
 
-abstract class DataValue {
+abstract class DataValue<Type> {
   type: DataStoreValueTypes;
-  constructor(_type: DataStoreValueTypes) {}
+  constructor(_type: DataStoreValueTypes) {
+    this.type = _type;
+  }
 
-  abstract serialize<Type>(input: Type): string;
-  abstract deserialize<Type>(input: string): Type;
+  abstract serialize(input: Type): string;
+  abstract deserialize(input: string): Type;
 }
 
-class ListValue extends DataValue {
+export class ListValue extends DataValue<any[]> {
+  readonly _type = DataStoreValueTypes.LIST;
   value: any[] = [];
+
   constructor() {
     super(DataStoreValueTypes.LIST);
   }
 
-  serialize(): string {
+  serialize(input: any[]): string {
     try {
-      return JSON.stringify(this.value);
+      return JSON.stringify(input);
     } catch (e) {
       return "";
     }
   }
 
-  deserialize<Array>(input: string): Array {
+  deserialize(input: string): any[] {
     try {
       return JSON.parse(input);
     } catch (e) {
-      return [] as Array;
+      return [];
     }
   }
 }
 
-class SetValue extends DataValue {
+export class SetValue extends DataValue<any[]> {
   readonly _type = DataStoreValueTypes.SET;
+  value = new Set();
 
   constructor() {
     super(DataStoreValueTypes.SET);
   }
 
-  serialize<Set>(input: Set): string {
+  serialize(input: any[]): string {
     try {
       return JSON.stringify(input);
     } catch (e) {
@@ -46,23 +51,24 @@ class SetValue extends DataValue {
     }
   }
 
-  deserialize<Set>(input: string): Set {
+  deserialize(input: string): any[] {
     try {
       return JSON.parse(input);
     } catch (e) {
-      return [] as Set;
+      return [];
     }
   }
 }
 
-class HashValue extends DataValue {
+export class HashValue extends DataValue<Record<string, any>> {
   readonly _type = DataStoreValueTypes.HASH;
+  value = new Map<string, any>();
 
   constructor() {
     super(DataStoreValueTypes.HASH);
   }
 
-  serialize<Hash>(input: Hash): string {
+  serialize(input: Record<string, any>): string {
     try {
       return JSON.stringify(input);
     } catch (e) {
@@ -70,43 +76,45 @@ class HashValue extends DataValue {
     }
   }
 
-  deserialize<Hash>(input: string): Hash {
+  deserialize(input: string): Record<string, any> {
     try {
       return JSON.parse(input);
     } catch (e) {
-      return {} as Hash;
+      return {};
     }
   }
 }
 
-class StringValue extends DataValue {
+export class StringValue extends DataValue<string> {
   readonly _type = DataStoreValueTypes.STRING;
+  value = "";
 
   constructor() {
     super(DataStoreValueTypes.STRING);
   }
 
-  serialize<String>(input: String): string {
+  serialize(input: string): string {
     return String(input);
   }
 
-  deserialize<String>(input: string): String {
-    return new String(input);
+  deserialize(input: string): string {
+    return input;
   }
 }
 
-class IntegerValue extends DataValue {
+export class IntegerValue extends DataValue<number> {
   readonly _type = DataStoreValueTypes.INTEGER;
+  value = undefined;
 
   constructor() {
     super(DataStoreValueTypes.INTEGER);
   }
 
-  serialize<Number>(input: Number): string {
+  serialize(input: number): string {
     return String(input);
   }
 
-  deserialize<Number>(input: string): Number {
-    return new Number(input).valueOf();
+  deserialize(input: string): number {
+    return Number(input);
   }
 }

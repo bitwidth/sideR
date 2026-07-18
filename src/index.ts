@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { CommandHandler } from "./commandHandler.js";
 import { ALLOWED_COMMANDS, REDIS_COMMANDS } from "./constants/commands.js";
 import { DEFAULT_SERVER_CONFIGURATION } from "./constants/configs.js";
@@ -10,19 +11,22 @@ import { ServerEvent } from "./types/server/index.js";
 import { logArgs } from "./utils/log.js";
 import { CommandValidator } from "./validator.js";
 import * as net from "node:net";
+import { PubSub } from "./pubsub.js";
 
 const redisServer = new CustomServer();
 DataStore.restore();
 
-class Connection {
+export class Connection {
   socket: net.Socket;
   parser: ProtocolDelimiterParser;
   commandHandler: CommandHandler;
+  id: string;
 
   constructor(socket: net.Socket) {
     this.socket = socket;
     this.parser = new ProtocolDelimiterParser(ALLOWED_COMMANDS, ";");
     this.commandHandler = new CommandHandler();
+    this.id = randomUUID();
   }
 
   respond(data: any, error: Error | undefined) {
@@ -49,6 +53,7 @@ class Connection {
   }
 
   destroy() {
+    PubSub.connectionCleanUp(this);
     this.socket.destroy();
     console.log(
       "Socket destroyed",
@@ -67,7 +72,7 @@ function socketDataHandler(connection: Connection, data: Buffer) {
       const validCommand = CommandValidator.validateCommandShape(command);
       const result = connection.commandHandler
         .setCommand(validCommand)
-        .execute();
+        .execute(connection);
       connection.respond(result, undefined);
     }
   } catch (error: any) {
@@ -84,12 +89,12 @@ function serverErrorHandler(error: any) {
 }
 
 function serverConnectionHandler(...args: any) {
-  // logArgs(args)
-  // args[0] = Socket
   console.info("New connection!");
   const socket: net.Socket = args[0];
   console.log(socket.remoteAddress, socket.remotePort);
   const connection = new Connection(socket);
+  redisServer.addConnection(connection);
+
   socket.on("data", (buffer: Buffer) => {
     socketDataHandler(connection, buffer);
   });
@@ -103,6 +108,7 @@ function serverConnectionHandler(...args: any) {
   });
 
   socket.on("close", () => {
+    redisServer.deleteConnection(connection);
     connection.destroy();
   });
 }

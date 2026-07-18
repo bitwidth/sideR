@@ -3,6 +3,9 @@ import {
   REDIS_COMMANDS,
   REDIS_MODIFIERS,
 } from "./constants/commands.js";
+import type { Connection } from "./index.js";
+import { PubSub } from "./pubsub.js";
+import type { CustomServer } from "./server.js";
 import { DataStore } from "./store.js";
 import type { CommandShape } from "./types/commands/index.js";
 
@@ -98,7 +101,19 @@ export class CommandHandler {
     return DataStore.hashDelete(map, key);
   }
 
-  execute() {
+  private subscribe(connection: Connection, channel: string) {
+    return PubSub.subscribe(channel, connection);
+  }
+
+  private unsubscribe(connection: Connection, channel: string) {
+    return PubSub.unsubscribe(channel, connection);
+  }
+
+  private publish(channel: string, data: string) {
+    return PubSub.publish(channel, data);
+  }
+
+  execute(connection: Connection) {
     let result;
 
     switch (this.command) {
@@ -159,6 +174,15 @@ export class CommandHandler {
         break;
       case REDIS_COMMANDS.HDEL:
         result = this.hashDelete(this.args[0]!, this.args[1]!);
+        break;
+      case REDIS_COMMANDS.SUBSCRIBE:
+        result = this.subscribe(connection, this.args[0]!);
+        break;
+      case REDIS_COMMANDS.UNSUBSCRIBE:
+        result = this.unsubscribe(connection, this.args[0]!);
+        break;
+      case REDIS_COMMANDS.PUBLISH:
+        result = this.publish(this.args[0]!, this.args[1]!);
         break;
       default:
         this.log("Sorry, command not recognised");

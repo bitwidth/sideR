@@ -24,6 +24,7 @@ export enum REDIS_COMMANDS {
   HDEL = "HDEL",
   // Pub/Sub
   SUBSCRIBE = "SUBSCRIBE",
+  UNSUBSCRIBE = "UNSUBSCRIBE",
   PUBLISH = "PUBLISH",
 }
 
@@ -54,6 +55,9 @@ export const ALLOWED_COMMANDS = [
   REDIS_COMMANDS.HSET,
   REDIS_COMMANDS.HGET,
   REDIS_COMMANDS.HDEL,
+  REDIS_COMMANDS.SUBSCRIBE,
+  REDIS_COMMANDS.UNSUBSCRIBE,
+  REDIS_COMMANDS.PUBLISH,
 ];
 
 export interface CommandModifiers {
@@ -439,6 +443,20 @@ export const COMMAND_VALIDATIONS: {
     },
   ],
   [REDIS_COMMANDS.SUBSCRIBE]: [
+    {
+      totalArgs: 1,
+      args: [
+        {
+          name: "channel",
+          type: ARG_TYPE.STRING,
+          maxLength: 255,
+          minLength: 1,
+          size: undefined,
+        },
+      ],
+    },
+  ],
+  [REDIS_COMMANDS.UNSUBSCRIBE]: [
     {
       totalArgs: 1,
       args: [
